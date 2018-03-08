@@ -108,11 +108,8 @@ def normalize(x):
     : return: Numpy array of normalize data
     """
     # TODO: Implement Function
-    a = 0.1
-    b = 0.9
-    grayscale_min = 0
-    grayscale_max = 255
-    return a + ( ( (x - grayscale_min)*(b - a) )/( grayscale_max - grayscale_min ) )
+   
+    return x/255
 
 
 
@@ -161,7 +158,7 @@ tests.test_one_hot_encode(one_hot_encode)
 # 运行下方的代码单元，将预处理所有 CIFAR-10 数据，并保存到文件中。下面的代码还使用了 10% 的训练数据，用来验证。
 # 
 
-# In[ ]:
+# In[5]:
 
 
 """
@@ -339,7 +336,7 @@ def flatten(x_tensor):
     # TODO: Implement Function
     fsize = np.prod(x_tensor.get_shape().as_list()[1:])
     finputs = tf.reshape(x_tensor,[-1,fsize])
-    #print (fsize)
+    #print (x_tensor.get_shape().as_list())
     return finputs
 
 
@@ -417,7 +414,7 @@ tests.test_output(output)
 # * 返回输出
 # * 使用 `keep_prob` 向模型中的一个或多个层应用 [TensorFlow 的 Dropout](https://www.tensorflow.org/api_docs/python/tf/nn/dropout)
 
-# In[26]:
+# In[7]:
 
 
 def conv_net(x, keep_prob):
@@ -433,23 +430,25 @@ def conv_net(x, keep_prob):
     #    conv2d_maxpool(x_tensor, conv_num_outputs, conv_ksize, conv_strides, pool_ksize, pool_strides)
     #out1 = conv2d_maxpool(x, 18, (2,2),(1,1),(8,8),(1,1))
     #out1 = conv2d_maxpool(x, 18, (4,4),(1,1),(4,4),(1,1))
-    out1 = conv2d_maxpool(x, 18, (4,4),(1,1),(8,8),(1,1))
-    out1 = tf.nn.dropout(out1, keep_prob)
+    out1 = conv2d_maxpool(x, 16, (4,4),(1,1),(2,2),(1,1))
+    out2 = conv2d_maxpool(out1,64, (4,4),(2,2),(2,2),(1,1))
+    out3 = conv2d_maxpool(out2,256, (4,4),(2,2),(2,2),(1,1))
 
     # TODO: Apply a Flatten Layer
     # Function Definition from Above:
     #   flatten(x_tensor)
-    out2 = flatten(out1)
+    out4 = flatten(out3)
     # TODO: Apply 1, 2, or 3 Fully Connected Layers
     #    Play around with different number of outputs
     # Function Definition from Above:
     #   fully_conn(x_tensor, num_outputs)
-    out3 = fully_conn(out2, 768)
+    out5 = tf.nn.dropout(out4, keep_prob)
+    out6 = fully_conn(out5, 1024)
     # TODO: Apply an Output Layer
     #    Set this to the number of classes
     # Function Definition from Above:
     #   output(x_tensor, num_outputs)
-    logits_output = output(out3, 10)
+    logits_output = output(out6, 10)
     
     # TODO: return output
     return logits_output
@@ -503,7 +502,7 @@ tests.test_conv_net(conv_net)
 # 注意：不需要返回任何内容。该函数只是用来优化神经网络。
 # 
 
-# In[27]:
+# In[8]:
 
 
 def train_neural_network(session, optimizer, keep_probability, feature_batch, label_batch):
@@ -523,7 +522,7 @@ def train_neural_network(session, optimizer, keep_probability, feature_batch, la
        
 
 
-tests.test_train_nn(train_neural_network)
+#tests.test_train_nn(train_neural_network)
 
 
 # ### 显示数据
@@ -531,7 +530,7 @@ tests.test_train_nn(train_neural_network)
 # 实现函数 `print_stats` 以输出损失和验证准确率。使用全局变量 `valid_features` 和 `valid_labels` 计算验证准确率。使用保留率 `1.0` 计算损失和验证准确率（loss and validation accuracy）。
 # 
 
-# In[28]:
+# In[9]:
 
 
 def print_stats(session, feature_batch, label_batch, cost, accuracy):
@@ -567,13 +566,13 @@ def print_stats(session, feature_batch, label_batch, cost, accuracy):
 #  * ...
 # * 设置 `keep_probability` 表示使用丢弃时保留节点的概率
 
-# In[45]:
+# In[12]:
 
 
 # TODO: Tune Parameters
-epochs = 5
-batch_size =64
-keep_probability = 0.6
+epochs = 10
+batch_size =128
+keep_probability = 0.9
 
 
 # ### 在单个 CIFAR-10 部分上训练
@@ -581,7 +580,7 @@ keep_probability = 0.6
 # 我们先用单个部分，而不是用所有的 CIFAR-10 批次训练神经网络。这样可以节省时间，并对模型进行迭代，以提高准确率。最终验证准确率达到 50% 或以上之后，在下一部分对所有数据运行模型。
 # 
 
-# In[46]:
+# In[13]:
 
 
 """
@@ -607,7 +606,7 @@ with tf.Session(config=config) as sess:
 # 
 # 现在，单个 CIFAR-10 部分的准确率已经不错了，试试所有五个部分吧。
 
-# In[47]:
+# In[14]:
 
 
 """
@@ -643,7 +642,7 @@ with tf.Session(config=config) as sess:
 # 
 # 利用测试数据集测试你的模型。这将是最终的准确率。你的准确率应该高于 50%。如果没达到，请继续调整模型结构和参数。
 
-# In[4]:
+# In[2]:
 
 
 """
